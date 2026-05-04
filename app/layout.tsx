@@ -3,13 +3,13 @@ import "./globals.css";
 
 const fraunces = Fraunces({ 
   subsets: ["latin"], 
-  variable: "--font-fraunces",
+  variable: "--font-fraunces", // This matches your globals.css
   display: "swap",
 });
 
 const manrope = Manrope({ 
   subsets: ["latin"], 
-  variable: "--font-manrope",
+  variable: "--font-manrope", // This matches your globals.css
   display: "swap",
 });
 
