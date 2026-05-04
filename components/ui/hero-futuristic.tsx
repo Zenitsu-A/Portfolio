@@ -186,7 +186,7 @@ export const HeroFuturistic = () => {
 
   useEffect(() => {
     // Только на клиенте: генерируем случайные задержки для глитча
-    setDelays(titleWords.map(() => Math.random() * 0.06));
+    setDelays(titleWords.map(() => Math.random() * 0.07));
     setSubtitleDelay(Math.random() * 0.1);
   }, [titleWords.length]);
 
