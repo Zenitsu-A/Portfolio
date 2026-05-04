@@ -1,6 +1,6 @@
 'use client';
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useAspect, useTexture } from '@react-three/drei';
 import { useMemo, useRef, useState, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
@@ -14,15 +14,15 @@ const Scene = () => {
   const [visible, setVisible] = useState(false);
   const [w, h] = useAspect(300, 300);
 
-  // The "Adjustment Layer" (Shader)
   const shaderArgs = useMemo(() => ({
     uniforms: {
       uTexture: { value: rawMap },
       uDepth: { value: depthMap },
-      uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2(0, 0) },
+      uProgress: { value: 0 },
       uOpacity: { value: 0 },
-      uScanColor: { value: new THREE.Color("#22d3ee") } // Your Cyan
+      uColorCyan: { value: new THREE.Color("#22d3ee") },
+      uColorPurple: { value: new THREE.Color("#a855f7") }
     },
     vertexShader: `
       varying vec2 vUv;
@@ -33,24 +33,38 @@ const Scene = () => {
     `,
     fragmentShader: `
       uniform sampler2D uTexture;
-      uniform float uTime;
+      uniform sampler2D uDepth;
+      uniform vec2 uMouse;
+      uniform float uProgress;
       uniform float uOpacity;
-      uniform vec3 uScanColor;
+      uniform vec3 uColorCyan;
+      uniform vec3 uColorPurple;
       varying vec2 vUv;
 
       void main() {
-        vec4 color = texture2D(uTexture, vUv);
+        // 1. Depth-Based Parallax (The 3D movement effect)
+        float depth = texture2D(uDepth, vUv).r;
+        vec2 displacedUv = vUv + (uMouse * depth * 0.05);
         
-        // The Scan Line Logic
-        float scanPos = sin(uTime * 0.8) * 0.5 + 0.5;
-        float scanWidth = 0.02;
-        float dist = abs(vUv.y - scanPos);
-        float edge = smoothstep(scanWidth, 0.0, dist);
+        vec4 color = texture2D(uTexture, displacedUv);
+        float displacedDepth = texture2D(uDepth, displacedUv).r;
+
+        // 2. The 3D Scan Line (Contours to the shape using depth)
+        // This is what makes it look 3D instead of flat
+        float scanWidth = 0.015;
+        float scanLine = smoothstep(scanWidth, 0.0, abs(displacedDepth - uProgress));
         
-        // Add Glow (Like a neon light)
-        vec3 finalColor = mix(color.rgb, uScanColor, edge * 0.6);
+        // 3. Digital "Noise" Grain (for that AI Cinema aesthetic)
+        float noise = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
         
-        gl_FragColor = vec4(finalColor, uOpacity);
+        // 4. Combine effects
+        vec3 glowColor = mix(uColorCyan, uColorPurple, vUv.y);
+        vec3 finalRGB = color.rgb + (glowColor * scanLine * 2.5);
+        
+        // Subtle scanline pattern
+        finalRGB += glowColor * scanLine * noise * 0.5;
+
+        gl_FragColor = vec4(finalRGB, uOpacity);
       }
     `
   }), [rawMap, depthMap]);
@@ -62,26 +76,24 @@ const Scene = () => {
   useFrame(({ clock, pointer }) => {
     if (!meshRef.current) return;
     const t = clock.getElapsedTime();
-    
-    // Update Uniforms
     const material = meshRef.current.material as THREE.ShaderMaterial;
-    material.uniforms.uTime.value = t;
+
+    // Orchestration: Matching the original scan timing
+    material.uniforms.uProgress.value = Math.sin(t * 0.6) * 0.5 + 0.5;
     material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, visible ? 1 : 0, 0.05);
     
-    // Smooth Movement
-    meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, pointer.y * 0.15, 0.1);
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, pointer.x * 0.15, 0.1);
-    meshRef.current.position.y = Math.sin(t * 0.5) * 0.05;
+    // Parallax mouse follow
+    material.uniforms.uMouse.value.x = THREE.MathUtils.lerp(material.uniforms.uMouse.value.x, pointer.x, 0.1);
+    material.uniforms.uMouse.value.y = THREE.MathUtils.lerp(material.uniforms.uMouse.value.y, pointer.y, 0.1);
+
+    // Subtle float
+    meshRef.current.position.y = Math.sin(t * 0.5) * 0.02;
   });
 
   return (
-    <mesh ref={meshRef} scale={[w * 0.45, h * 0.45, 1]}>
-      <planeGeometry args={[1, 1, 32, 32]} />
-      <shaderMaterial 
-        args={[shaderArgs]} 
-        transparent={true} 
-        depthWrite={false}
-      />
+    <mesh ref={meshRef} scale={[w * 0.5, h * 0.5, 1]}>
+      <planeGeometry args={[1, 1, 64, 64]} />
+      <shaderMaterial args={[shaderArgs]} transparent={true} depthWrite={false} />
     </mesh>
   );
 };
@@ -99,35 +111,54 @@ export const HeroFuturistic = () => {
 
   return (
     <div className="h-svh bg-[#121212] overflow-hidden relative w-full">
+      {/* Title Overlay */}
       <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center items-center text-center px-6">
-        <h1 className="text-4xl md:text-7xl font-title tracking-tighter">
-          <span className="flex flex-wrap justify-center gap-x-4">
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-title tracking-tighter leading-none">
+          <span className="flex flex-wrap justify-center gap-x-4 md:gap-x-8">
             {titleWords.map((word, index) => (
               <span
                 key={index}
-                className={`transition-all duration-700 ${index < visibleWords ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                style={{ transitionDelay: `${index * 0.1}s` }}
+                className={`transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) ${
+                  index < visibleWords ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20 blur-sm'
+                }`}
+                style={{ 
+                  transitionDelay: `${index * 0.1}s`,
+                  background: 'linear-gradient(to bottom, #fff, #9ca3af)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
               >
                 {word}
               </span>
             ))}
           </span>
         </h1>
-        <p className="mt-4 text-xs md:text-sm font-sans text-cyan-400/60 uppercase tracking-[0.4em] animate-pulse">
-           Established Production Quality
+        <p className="mt-8 text-[10px] md:text-xs font-sans text-primary uppercase tracking-[0.6em] animate-pulse">
+           Cinema Grade Production
         </p>
       </div>
 
+      {/* 3D Canvas Section */}
       <div className="absolute inset-0 z-10">
-        <Canvas camera={{ position: [0, 0, 2], fov: 75 }}>
+        <Canvas camera={{ position: [0, 0, 2], fov: 50 }}>
           <Suspense fallback={null}>
             <Scene />
           </Suspense>
         </Canvas>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 font-sans text-[9px] tracking-[0.3em] uppercase text-gray-500">
-        Discover the craft ↓
+      {/* Modern UI Elements */}
+      <div className="absolute bottom-12 left-12 z-30 hidden md:block">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-[1px] bg-primary/30" />
+          <span className="text-[10px] font-sans text-gray-500 uppercase tracking-widest">Selected Works 2026</span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-12 right-12 z-30">
+        <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center animate-bounce">
+          <span className="text-white text-xs">↓</span>
+        </div>
       </div>
     </div>
   );
