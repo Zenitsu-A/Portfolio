@@ -59,12 +59,11 @@ export const ScannedIcon = ({
 };
 
 // --- 2. The Main Radar Component ---
-export const Radar = () => {
+export const Radar = ({ className }: { className?: string }) => {
   const sweepDuration = 6;
-  const circles = new Array(6).fill(1);
-
+// ...
   return (
-    <div className="relative flex h-[600px] w-full items-center justify-center overflow-hidden bg-black">
+    <div className={twMerge("relative flex h-[600px] w-full items-center justify-center overflow-hidden bg-black", className)}>
       
       {/* 
           TASK 2 & 3: Fading Box Boundary 
