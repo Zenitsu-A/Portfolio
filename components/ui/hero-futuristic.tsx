@@ -49,25 +49,21 @@ const PostProcessing = ({
     const scenePassColor = scenePass.getTextureNode('output');
     const bloomPass = bloom(scenePassColor, strength, 0.5, threshold);
 
-    // Create the scanning effect uniform
     const uScanProgress = uniform(0);
     progressRef.current = uScanProgress;
 
-    // Create a red overlay that follows the scan line
     const scanPos = float(uScanProgress.value);
     const uvY = uv().y;
     const scanWidth = float(0.05);
     const scanLine = smoothstep(0, scanWidth, abs(uvY.sub(scanPos)));
     const redOverlay = vec3(1, 0, 0).mul(oneMinus(scanLine)).mul(0.4);
 
-    // Mix the original scene with the red overlay
     const withScanEffect = mix(
       scenePassColor,
       add(scenePassColor, redOverlay),
       fullScreenEffect ? smoothstep(0.9, 1.0, oneMinus(scanLine)) : 1.0
     );
 
-    // Add bloom effect after scan effect
     const final = withScanEffect.add(bloomPass);
 
     postProcessing.outputNode = final;
@@ -76,7 +72,6 @@ const PostProcessing = ({
   }, [camera, gl, scene, strength, threshold, fullScreenEffect]);
 
   useFrame(({ clock }) => {
-    // Animate the scan line from top to bottom
     progressRef.current.value = (Math.sin(clock.getElapsedTime() * 0.5) * 0.5 + 0.5);
     render.renderAsync();
   }, 1);
@@ -94,7 +89,6 @@ const Scene = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Показываем изображение после загрузки текстур
     if (rawMap && depthMap) {
       setVisible(true);
     }
@@ -103,11 +97,8 @@ const Scene = () => {
   const { material, uniforms } = useMemo(() => {
     const uPointer = uniform(new THREE.Vector2(0));
     const uProgress = uniform(0);
-
     const strength = 0.01;
-
     const tDepthMap = texture(depthMap);
-
     const tMap = texture(
       rawMap,
       uv().add(tDepthMap.r.mul(uPointer).mul(strength))
@@ -115,21 +106,14 @@ const Scene = () => {
 
     const aspect = float(WIDTH).div(HEIGHT);
     const tUv = vec2(uv().x.mul(aspect), uv().y);
-
     const tiling = vec2(120.0);
     const tiledUv = mod(tUv.mul(tiling), 2.0).sub(1.0);
-
     const brightness = mx_cell_noise_float(tUv.mul(tiling).div(2));
-
     const dist = float(tiledUv.length());
     const dot = float(smoothstep(0.5, 0.49, dist)).mul(brightness);
-
     const depth = tDepthMap.r;
-
     const flow = oneMinus(smoothstep(0, 0.02, abs(depth.sub(uProgress))));
-
     const mask = dot.mul(flow).mul(vec3(10, 0, 0));
-
     const final = blendScreen(tMap, mask);
 
     const material = new THREE.MeshBasicNodeMaterial({
@@ -140,10 +124,7 @@ const Scene = () => {
 
     return {
       material,
-      uniforms: {
-        uPointer,
-        uProgress,
-      },
+      uniforms: { uPointer, uProgress },
     };
   }, [rawMap, depthMap]);
 
@@ -151,15 +132,10 @@ const Scene = () => {
 
   useFrame(({ clock }) => {
     uniforms.uProgress.value = (Math.sin(clock.getElapsedTime() * 0.5) * 0.5 + 0.5);
-    // Плавное появление
     if (meshRef.current && 'material' in meshRef.current && meshRef.current.material) {
       const mat = meshRef.current.material as any;
       if ('opacity' in mat) {
-        mat.opacity = THREE.MathUtils.lerp(
-          mat.opacity,
-          visible ? 1 : 0,
-          0.07
-        );
+        mat.opacity = THREE.MathUtils.lerp(mat.opacity, visible ? 1 : 0, 0.07);
       }
     }
   });
@@ -185,8 +161,7 @@ export const HeroFuturistic = () => {
   const [subtitleDelay, setSubtitleDelay] = useState(0);
 
   useEffect(() => {
-    // Только на клиенте: генерируем случайные задержки для глитча
-    setDelays(titleWords.map(() => Math.random() * 0.07));
+    setDelays(titleWords.map(() => Math.random() * 0.06));
     setSubtitleDelay(Math.random() * 0.1);
   }, [titleWords.length]);
 
@@ -201,40 +176,51 @@ export const HeroFuturistic = () => {
   }, [visibleWords, titleWords.length]);
 
   return (
-    <div className="h-svh">
-      <div className="h-svh uppercase items-center w-full absolute z-60 pointer-events-none px-10 flex justify-center flex-col">
-        <div className="text-3xl md:text-5xl xl:text-6xl 2xl:text-7xl font-extrabold">
-          <div className="flex space-x-2 lg:space-x-6 overflow-hidden text-white">
+    <div className="h-svh bg-background"> {/* Background normalization */}
+      <div className="h-svh uppercase items-center w-full absolute z-[60] pointer-events-none px-10 flex justify-center flex-col text-center">
+        
+        {/* Fixed Title Section */}
+        <div className="text-3xl md:text-5xl xl:text-7xl font-title tracking-tight">
+          <div className="flex flex-wrap justify-center gap-x-3 lg:gap-x-6 overflow-hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
             {titleWords.map((word, index) => (
               <div
                 key={index}
                 className={index < visibleWords ? 'fade-in' : ''}
-                style={{ animationDelay: `${index * 0.13 + (delays[index] || 0)}s`, opacity: index < visibleWords ? undefined : 0 }}
+                style={{ 
+                    animationDelay: `${index * 0.13 + (delays[index] || 0)}s`, 
+                    opacity: index < visibleWords ? undefined : 0 
+                }}
               >
                 {word}
               </div>
             ))}
           </div>
         </div>
-        <div className="text-xs md:text-xl xl:text-2xl 2xl:text-3xl mt-2 overflow-hidden text-white font-bold">
+
+        {/* Fixed Subtitle Section */}
+        <div className="text-xs md:text-xl xl:text-2xl mt-4 overflow-hidden text-gray-400 font-sans tracking-wide">
           <div
             className={subtitleVisible ? 'fade-in-subtitle' : ''}
-            style={{ animationDelay: `${titleWords.length * 0.13 + 0.2 + subtitleDelay}s`, opacity: subtitleVisible ? undefined : 0 }}
+            style={{ 
+                animationDelay: `${titleWords.length * 0.13 + 0.2 + subtitleDelay}s`, 
+                opacity: subtitleVisible ? undefined : 0 
+            }}
           >
             {subtitle}
           </div>
         </div>
       </div>
 
+      {/* Explore Button Normalization */}
       <button
-        className="explore-btn"
+        className="explore-btn font-sans"
         style={{ animationDelay: '2.2s' }}
       >
         Scroll to explore
         <span className="explore-arrow">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" className="arrow-svg">
-            <path d="M11 5V17" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M6 12L11 17L16 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          <svg width="20" height="20" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" className="arrow-svg">
+            <path d="M11 5V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M6 12L11 17L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </span>
       </button>
@@ -253,59 +239,37 @@ export const HeroFuturistic = () => {
 
       <style>{`
         @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes fade-in-subtitle {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes bounce-arrow {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(8px);
-          }
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(8px); }
         }
 
-        .fade-in {
-          animation: fade-in 0.6s ease-out forwards;
-        }
-
-        .fade-in-subtitle {
-          animation: fade-in-subtitle 0.8s ease-out forwards;
-        }
+        .fade-in { animation: fade-in 0.6s ease-out forwards; }
+        .fade-in-subtitle { animation: fade-in-subtitle 0.8s ease-out forwards; }
 
         .explore-btn {
           animation: bounce-arrow 2s ease-in-out infinite;
-          animation-delay: 2.2s;
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
-          border: 2px solid rgba(255, 255, 255, 0.5);
+          padding: 0.6rem 1.2rem;
+          border: 1px solid rgba(34, 211, 238, 0.3);
           border-radius: 9999px;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
+          color: #22d3ee;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
           transition: all 0.3s ease;
           cursor: pointer;
-          background: transparent;
+          background: rgba(18, 18, 18, 0.6);
+          backdrop-filter: blur(4px);
           position: fixed;
           bottom: 40px;
           left: 50%;
@@ -314,18 +278,12 @@ export const HeroFuturistic = () => {
         }
 
         .explore-btn:hover {
-          border-color: white;
-          background: rgba(255, 255, 255, 0.1);
-          transform: translateX(-50%) translateY(-2px);
+          border-color: #22d3ee;
+          background: rgba(34, 211, 238, 0.1);
+          box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
         }
 
-        .arrow-svg {
-          transition: transform 0.3s ease;
-        }
-
-        .explore-btn:hover .arrow-svg {
-          transform: translateY(4px);
-        }
+        .arrow-svg { transition: transform 0.3s ease; }
       `}</style>
     </div>
   );
