@@ -171,11 +171,12 @@ export default function Home() {
               <div className="relative flex h-96 w-full max-w-3xl flex-col items-center justify-center space-y-4 overflow-hidden px-4">
                 <div className="mx-auto w-full max-w-3xl">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
-                    <ScannedIcon
-                      text="Motion Graphics"
-                      delay={0.2}
-                      icon={<HiDocumentText className="h-8 w-8 text-gray-500" />}
-                    />
+                   <ScannedIcon
+  text="Motion Graphics"
+  angle={45}       // Provide a valid number for angle
+  distance={100}   // Provide a valid number for distance
+  icon={<HiDocumentText className="h-8 w-8 text-gray-500" />}
+/>
                     <ScannedIcon
                       delay={0.4}
                       text="Video Editing"
