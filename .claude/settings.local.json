@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest *)",
+      "Bash(npx shadcn-ui@latest init -y)",
+      "Bash(npm run *)",
+      "Bash(Start-Sleep -Seconds 5)",
+      "Bash(Get-Content \"C:\\\\Users\\\\ayous\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-ayous-Claude-Demo\\\\482b2b07-36c0-4c8a-b1db-a4974412a1b9\\\\tasks\\\\blpxsghro.output\" -Tail 30)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Fix Three.js shader type error in hero component *)",
+      "Bash(git push *)",
+      "Bash(git init *)"
+    ]
+  }
+}
