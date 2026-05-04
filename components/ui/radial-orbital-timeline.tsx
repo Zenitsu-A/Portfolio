@@ -1,345 +1,136 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Link, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { twMerge } from "tailwind-merge";
+import React from "react";
 
-interface TimelineItem {
-  id: number;
-  title: string;
-  date: string;
-  content: string;
-  category: string;
-  icon: React.ElementType;
-  relatedIds: number[];
-  status: "completed" | "in-progress" | "pending";
-  energy: number;
-}
-
-interface RadialOrbitalTimelineProps {
-  timelineData: TimelineItem[];
-}
-
-export default function RadialOrbitalTimeline({
-  timelineData,
-}: RadialOrbitalTimelineProps) {
-  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>(
-    {}
+export const Circle = ({ className, idx, ...rest }: any) => {
+  return (
+    <motion.div
+      {...rest}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: idx * 0.1, duration: 0.5 }}
+      className={twMerge(
+        "absolute inset-0 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-800",
+        className
+      )}
+    />
   );
-  const [viewMode, setViewMode] = useState<"orbital">("orbital");
-  const [rotationAngle, setRotationAngle] = useState<number>(0);
-  const [autoRotate, setAutoRotate] = useState<boolean>(true);
-  const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
-  const [centerOffset, setCenterOffset] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
-  const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
+};
 
-  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === containerRef.current || e.target === orbitRef.current) {
-      setExpandedItems({});
-      setActiveNodeId(null);
-      setPulseEffect({});
-      setAutoRotate(true);
-    }
-  };
-
-  const toggleItem = (id: number) => {
-    setExpandedItems((prev) => {
-      const newState = { ...prev };
-      Object.keys(newState).forEach((key) => {
-        if (parseInt(key) !== id) {
-          newState[parseInt(key)] = false;
-        }
-      });
-
-      newState[id] = !prev[id];
-
-      if (!prev[id]) {
-        setActiveNodeId(id);
-        setAutoRotate(false);
-
-        const relatedItems = getRelatedItems(id);
-        const newPulseEffect: Record<number, boolean> = {};
-        relatedItems.forEach((relId) => {
-          newPulseEffect[relId] = true;
-        });
-        setPulseEffect(newPulseEffect);
-
-        centerViewOnNode(id);
-      } else {
-        setActiveNodeId(null);
-        setAutoRotate(true);
-        setPulseEffect({});
-      }
-
-      return newState;
-    });
-  };
-
-  useEffect(() => {
-    let rotationTimer: NodeJS.Timeout;
-
-    if (autoRotate && viewMode === "orbital") {
-      rotationTimer = setInterval(() => {
-        setRotationAngle((prev) => {
-          const newAngle = (prev + 0.3) % 360;
-          return Number(newAngle.toFixed(3));
-        });
-      }, 50);
-    }
-
-    return () => {
-      if (rotationTimer) {
-        clearInterval(rotationTimer);
-      }
-    };
-  }, [autoRotate, viewMode]);
-
-  const centerViewOnNode = (nodeId: number) => {
-    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
-
-    const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
-    const totalNodes = timelineData.length;
-    const targetAngle = (nodeIndex / totalNodes) * 360;
-
-    setRotationAngle(270 - targetAngle);
-  };
-
-  const calculateNodePosition = (index: number, total: number) => {
-    const angle = ((index / total) * 360 + rotationAngle) % 360;
-    const radius = 200;
-    const radian = (angle * Math.PI) / 180;
-
-    const x = radius * Math.cos(radian) + centerOffset.x;
-    const y = radius * Math.sin(radian) + centerOffset.y;
-
-    const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Math.max(
-      0.4,
-      Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
-    );
-
-    return { x, y, angle, zIndex, opacity };
-  };
-
-  const getRelatedItems = (itemId: number): number[] => {
-    const currentItem = timelineData.find((item) => item.id === itemId);
-    return currentItem ? currentItem.relatedIds : [];
-  };
-
-  const isRelatedToActive = (itemId: number): boolean => {
-    if (!activeNodeId) return false;
-    const relatedItems = getRelatedItems(activeNodeId);
-    return relatedItems.includes(itemId);
-  };
-
-  const getStatusStyles = (status: TimelineItem["status"]): string => {
-    switch (status) {
-      case "completed":
-        return "text-white bg-black border-white";
-      case "in-progress":
-        return "text-black bg-white border-black";
-      case "pending":
-        return "text-white bg-black/40 border-white/50";
-      default:
-        return "text-white bg-black/40 border-white/50";
-    }
-  };
+// --- Task 4: The Icon with scanning logic ---
+export const IconContainer = ({ 
+  icon, 
+  text, 
+  angle = 0, 
+  distance = 0, 
+  sweepDuration = 6 
+}: { 
+  icon?: React.ReactNode; 
+  text?: string; 
+  angle?: number; 
+  distance?: number; 
+  sweepDuration?: number;
+}) => {
+  // Sync the ping with the radar rotation
+  const delay = (angle / 360) * sweepDuration;
 
   return (
-    <div
-      className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden"
-      ref={containerRef}
-      onClick={handleContainerClick}
+    <div 
+      className="absolute z-50 -translate-x-1/2 -translate-y-1/2"
+      style={{
+        top: `${50 + Math.sin((angle * Math.PI) / 180) * distance}%`,
+        left: `${50 + Math.cos((angle * Math.PI) / 180) * distance}%`,
+      }}
     >
-      <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
-        <div
-          className="absolute w-full h-full flex items-center justify-center"
-          ref={orbitRef}
-          style={{
-            perspective: "1000px",
-            transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
-          }}
-        >
-          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-cyan-500 to-cyan-400 animate-pulse flex items-center justify-center z-10">
-            <div className="absolute w-20 h-20 rounded-full border border-white/20 animate-ping opacity-70"></div>
-            <div
-              className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50"
-              style={{ animationDelay: "0.5s" }}
-            ></div>
-            <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
-          </div>
-
-          <div className="absolute w-96 h-96 rounded-full border border-white/10"></div>
-
-          {timelineData.map((item, index) => {
-            const position = calculateNodePosition(index, timelineData.length);
-            const isExpanded = expandedItems[item.id];
-            const isRelated = isRelatedToActive(item.id);
-            const isPulsing = pulseEffect[item.id];
-            const Icon = item.icon as any;
-
-            const nodeStyle = {
-              transform: `translate(${position.x}px, ${position.y}px)`,
-              zIndex: isExpanded ? 200 : position.zIndex,
-              opacity: isExpanded ? 1 : position.opacity,
-            };
-
-            return (
-              <div
-                key={item.id}
-                ref={(el) => {
-                  if (el) nodeRefs.current[item.id] = el;
-                }}
-                className="absolute transition-all duration-700 cursor-pointer"
-                style={nodeStyle}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleItem(item.id);
-                }}
-              >
-                <div
-                  className={`absolute rounded-full -inset-1 ${
-                    isPulsing ? "animate-pulse duration-1000" : ""
-                  }`}
-                  style={{
-                    background: `radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)`,
-                    width: `${item.energy * 0.5 + 40}px`,
-                    height: `${item.energy * 0.5 + 40}px`,
-                    left: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                    top: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                  }}
-                ></div>
-
-                <div
-                  className={`
-                  w-10 h-10 rounded-full flex items-center justify-center
-                  ${
-                    isExpanded
-                      ? "bg-white text-black"
-                      : isRelated
-                      ? "bg-white/50 text-black"
-                      : "bg-black text-white"
-                  }
-                  border-2
-                  ${
-                    isExpanded
-                      ? "border-white shadow-lg shadow-white/30"
-                      : isRelated
-                      ? "border-white animate-pulse"
-                      : "border-white/40"
-                  }
-                  transition-all duration-300 transform
-                  ${isExpanded ? "scale-150" : ""}
-                `}
-                >
-                  <Icon size={16} />
-                </div>
-
-                <div
-                  className={`
-                  absolute top-12  whitespace-nowrap
-                  text-xs font-semibold tracking-wider
-                  transition-all duration-300
-                  ${isExpanded ? "text-white scale-125" : "text-white/70"}
-                `}
-                >
-                  {item.title}
-                </div>
-
-                {isExpanded && (
-                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-black/90 backdrop-blur-lg border-white/30 shadow-xl shadow-white/10 overflow-visible">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-center">
-                        <Badge
-                          className={`px-2 text-xs ${getStatusStyles(
-                            item.status
-                          )}`}
-                        >
-                          {item.status === "completed"
-                            ? "COMPLETE"
-                            : item.status === "in-progress"
-                            ? "IN PROGRESS"
-                            : "PENDING"}
-                        </Badge>
-                        <span className="text-xs font-mono text-white/50">
-                          {item.date}
-                        </span>
-                      </div>
-                      <CardTitle className="text-sm mt-2">
-                        {item.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs text-white/80">
-                      <p>{item.content}</p>
-
-                      <div className="mt-4 pt-3 border-t border-white/10">
-                        <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="flex items-center">
-                            <Zap size={10} className="mr-1" />
-                            Energy Level
-                          </span>
-                          <span className="font-mono">{item.energy}%</span>
-                        </div>
-                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
-                            style={{ width: `${item.energy}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {item.relatedIds.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-white/10">
-                          <div className="flex items-center mb-2">
-                            <Link size={10} className="text-white/70 mr-1" />
-                            <h4 className="text-xs uppercase tracking-wider font-medium text-white/70">
-                              Connected Nodes
-                            </h4>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {item.relatedIds.map((relatedId) => {
-                              const relatedItem = timelineData.find(
-                                (i) => i.id === relatedId
-                              );
-                              return (
-                                <Button
-                                  key={relatedId}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center h-6 px-2 py-0 text-xs rounded-none border-white/20 bg-transparent hover:bg-white/10 text-white/80 hover:text-white transition-all"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleItem(relatedId);
-                                  }}
-                                >
-                                  {relatedItem?.title}
-                                  <ArrowRight
-                                    size={8}
-                                    className="ml-1 text-white/60"
-                                  />
-                                </Button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            );
-          })}
+      <motion.div
+        initial={{ opacity: 0.2 }}
+        animate={{ 
+          opacity: [0.2, 1, 0.2], 
+          scale: [1, 1.1, 1],
+          filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"]
+        }}
+        transition={{
+          duration: 0.8,
+          repeat: Infinity,
+          repeatDelay: sweepDuration - 0.8,
+          delay: delay,
+        }}
+        className="flex flex-col items-center"
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-neutral-900/90 shadow-2xl backdrop-blur-md">
+           <div className="text-cyan-500/50">
+            {icon || <div className="h-2 w-2 rounded-full bg-current" />}
+           </div>
         </div>
+        {text && (
+          <span className="mt-2 text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
+            {text}
+          </span>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export const Radar = ({ className, children }: { className?: string, children?: React.ReactNode }) => {
+  const sweepDuration = 6;
+  const circles = new Array(8).fill(1);
+
+  return (
+    <div className={twMerge("relative h-[500px] w-full flex items-center justify-center overflow-hidden bg-black", className)}>
+      {/* 
+          Task 2 & 3: Box Boundary Fade 
+          This mask prevents hard edges on circles and the radar line.
+      */}
+      <div 
+        className="relative flex h-full w-full items-center justify-center"
+        style={{
+          maskImage: "radial-gradient(circle, black 40%, transparent 85%)",
+          WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 85%)",
+        }}
+      >
+        {/* Background Grid Texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:40px_40px] opacity-20" />
+
+        {/* Task 1: Integrated Sweep (Line + Trail overlaid) */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: sweepDuration, ease: "linear", repeat: Infinity }}
+          className="absolute z-40 h-[80%] w-[80%] pointer-events-none"
+        >
+          {/* Light Trail (The Gradient Fan) */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: "conic-gradient(from 0deg, transparent 0%, rgba(6, 182, 212, 0.4) 50%, transparent 100%)",
+              transform: "rotate(-180deg)", // Perfectly aligns trail behind the line
+              maskImage: "radial-gradient(circle at center, black, transparent 70%)",
+              WebkitMaskImage: "radial-gradient(circle at center, black, transparent 70%)",
+            }}
+          />
+          {/* Hard Leading Line */}
+          <div className="absolute top-1/2 left-1/2 h-[2px] w-1/2 bg-gradient-to-r from-cyan-400 via-cyan-400/50 to-transparent origin-left shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
+        </motion.div>
+
+        {/* Concentric Circles */}
+        {circles.map((_, idx) => (
+          <Circle
+            key={idx}
+            idx={idx}
+            style={{
+              width: `${(idx + 1) * 12}%`,
+              height: `${(idx + 1) * 12}%`,
+            }}
+          />
+        ))}
+
+        {/* This allows you to drop IconContainers inside <Radar> in your page.tsx */}
+        {children}
+
+        {/* Center Point Glow */}
+        <div className="relative z-50 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,1)]" />
       </div>
     </div>
   );
-}
-export { ScannedIcon as IconContainer };
+};
