@@ -3,13 +3,23 @@
 :root {
   --background: #121212;
   --foreground: #ededed;
+  /* Defining the design palette variables */
+  --color-primary: #22d3ee;    /* Cyan */
+  --color-secondary: #a855f7;  /* Purple */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* Adding our cinematic colors to Tailwind */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+
+  /* Linking the fonts from your Layout file */
+  --font-title: var(--font-fraunces);
+  --font-sans: var(--font-manrope);
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }
@@ -25,32 +35,34 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Titles: Fraunces + Gradient */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-fraunces), serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  /* This creates the automatic Cyan-to-Purple gradient on all titles */
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* Paragraphs & UI: Manrope */
 p, span, a, li, label, input, textarea, button {
   font-family: var(--font-manrope), sans-serif;
 }
 
 @keyframes accordion-down {
-  from {
-    height: 0;
-  }
-  to {
-    height: var(--radix-accordion-content-height);
-  }
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
 }
 
 @keyframes accordion-up {
-  from {
-    height: var(--radix-accordion-content-height);
-  }
-  to {
-    height: 0;
-  }
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
 }
 
 .scrollbar-hide::-webkit-scrollbar {
