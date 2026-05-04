@@ -342,3 +342,4 @@ export default function RadialOrbitalTimeline({
     </div>
   );
 }
+export { ScannedIcon as IconContainer };
