@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useAspect, useTexture } from '@react-each/drei';
+import { useAspect, useTexture } from '@react-three/drei';
 import { useMemo, useRef, useState, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
 
