@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ClientOnly } from '@/components/client-only';
 import HeroFuturistic from '@/components/ui/hero-futuristic';
 import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline';
-import { Radar, IconContainer } from '@/components/ui/radar-effect';
+import { Radar, ScannedIcon } from '@/components/ui/radar-effect';
 import { ShareholderReports } from '@/components/ui/carousel';
 import { WorldMap } from '@/components/ui/world-map';
 import { SparklesText } from '@/components/ui/sparkles-text';
