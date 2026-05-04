@@ -146,7 +146,7 @@ const Scene = () => {
 };
 
 export const HeroFuturistic = () => {
-  const titleWords = 'Motion Graphics & Video Editing'.split(' ');
+  const titleWords = 'AHMED SALAH PRODUCTION'.split(' ');
   const subtitle = 'Quality content creation with 100% client satisfaction.';
   const [visibleWords, setVisibleWords] = useState(0);
   const [subtitleVisible, setSubtitleVisible] = useState(false);
