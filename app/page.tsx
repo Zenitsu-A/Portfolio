@@ -171,17 +171,17 @@ export default function Home() {
               <div className="relative flex h-96 w-full max-w-3xl flex-col items-center justify-center space-y-4 overflow-hidden px-4">
                 <div className="mx-auto w-full max-w-3xl">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
-                    <IconContainer
+                    <ScannedIcon
                       text="Motion Graphics"
                       delay={0.2}
                       icon={<HiDocumentText className="h-8 w-8 text-gray-500" />}
                     />
-                    <IconContainer
+                    <ScannedIcon
                       delay={0.4}
                       text="Video Editing"
                       icon={<AiFillDollarCircle className="h-8 w-8 text-gray-500" />}
                     />
-                    <IconContainer
+                    <ScannedIcon
                       text="VFX & Animation"
                       delay={0.3}
                       icon={<BsClipboardDataFill className="h-8 w-8 text-gray-500" />}
@@ -190,12 +190,12 @@ export default function Home() {
                 </div>
                 <div className="mx-auto w-full max-w-md">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
-                    <IconContainer
+                    <ScannedIcon
                       text="After Effects"
                       delay={0.5}
                       icon={<BiSolidReport className="h-8 w-8 text-gray-500" />}
                     />
-                    <IconContainer
+                    <ScannedIcon
                       text="Premiere Pro"
                       delay={0.8}
                       icon={<HiMiniDocumentArrowUp className="h-8 w-8 text-gray-500" />}
@@ -204,12 +204,12 @@ export default function Home() {
                 </div>
                 <div className="mx-auto w-full max-w-3xl">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
-                    <IconContainer
+                    <ScannedIcon
                       delay={0.6}
                       text="DaVinci Resolve"
                       icon={<RiFilePaper2Fill className="h-8 w-8 text-gray-500" />}
                     />
-                    <IconContainer
+                    <ScannedIcon
                       delay={0.7}
                       text="Photoshop & Illustrator"
                       icon={<FileText className="h-8 w-8 text-gray-500" />}
