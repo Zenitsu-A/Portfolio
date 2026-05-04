@@ -172,18 +172,21 @@ export default function Home() {
                 <div className="mx-auto w-full max-w-3xl">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
                    <ScannedIcon
-                      text="Motion Graphics"
-                      delay={0.2}
-                      icon={<HiDocumentText className="h-8 w-8 text-gray-500" />}
-                    />
+  text="Motion Graphics"
+  angle={45}       // <-- Add an angle (0 to 360)
+  distance={30}    // <-- Add a distance percentage from center
+  icon={<HiDocumentText className="h-8 w-8 text-gray-500" />}
+/>
                     <ScannedIcon
-                      delay={0.4}
                       text="Video Editing"
+                      angle={90}       // Replaced delay={0.4}
+                      distance={40}    // Percentage from center
                       icon={<AiFillDollarCircle className="h-8 w-8 text-gray-500" />}
                     />
                     <ScannedIcon
                       text="VFX & Animation"
-                      delay={0.3}
+                      angle={180}      // Replaced delay={0.3}
+                      distance={35}
                       icon={<BsClipboardDataFill className="h-8 w-8 text-gray-500" />}
                     />
                   </div>
@@ -192,12 +195,14 @@ export default function Home() {
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
                     <ScannedIcon
                       text="After Effects"
-                      delay={0.5}
+                      angle={270}      // Replaced delay={0.5}
+                      distance={45}
                       icon={<BiSolidReport className="h-8 w-8 text-gray-500" />}
                     />
                     <ScannedIcon
                       text="Premiere Pro"
-                      delay={0.8}
+                      angle={315}      // Replaced delay={0.8}
+                      distance={30}
                       icon={<HiMiniDocumentArrowUp className="h-8 w-8 text-gray-500" />}
                     />
                   </div>
@@ -205,13 +210,15 @@ export default function Home() {
                 <div className="mx-auto w-full max-w-3xl">
                   <div className="flex w-full items-center justify-center space-x-10 md:justify-between md:space-x-0">
                     <ScannedIcon
-                      delay={0.6}
                       text="DaVinci Resolve"
+                      angle={225}      // Replaced delay={0.6}
+                      distance={50}
                       icon={<RiFilePaper2Fill className="h-8 w-8 text-gray-500" />}
                     />
                     <ScannedIcon
-                      delay={0.7}
                       text="Photoshop & Illustrator"
+                      angle={340}      // Replaced delay={0.7}
+                      distance={25}
                       icon={<FileText className="h-8 w-8 text-gray-500" />}
                     />
                   </div>
