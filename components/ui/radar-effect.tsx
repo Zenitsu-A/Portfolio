@@ -60,56 +60,50 @@ export const ScannedIcon = ({
 
 // --- 2. The Main Radar Component ---
 export const Radar = ({ className }: { className?: string }) => {
-  // Make sure these two lines are here!
   const sweepDuration = 6;
-  const circles = new Array(6).fill(1); 
+  const circles = new Array(6).fill(1);
 
   return (
     <div className={twMerge("relative flex h-[600px] w-full items-center justify-center overflow-hidden bg-black", className)}>
-       {/* The rest of your code remains exactly the same... */}
       
-      {/* 
-          TASK 2 & 3: Fading Box Boundary 
-          We use a radial mask so the lines/circles fade out before hitting the edge 
-      */}
+      {/* FIX 1: 'circle closest-side' guarantees the mask stays circular even in a wide container, fading softly. */}
       <div 
         className="relative flex h-full w-full items-center justify-center"
         style={{
-          maskImage: "radial-gradient(circle, black 30%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(circle, black 30%, transparent 80%)",
+          maskImage: "radial-gradient(circle closest-side, black 40%, transparent 95%)",
+          WebkitMaskImage: "radial-gradient(circle closest-side, black 40%, transparent 95%)",
         }}
       >
         {/* Background Grid */}
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:30px_30px] opacity-20" />
 
-        {/* TASK 1: Integrated Sweep (Line + Trail) */}
+        {/* FIX 2: Added 'aspect-square' so the sweeping radar stays perfectly round */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: sweepDuration, ease: "linear", repeat: Infinity }}
-          className="absolute z-40 h-[80%] w-[80%] pointer-events-none"
+          className="absolute z-40 aspect-square h-[90%] pointer-events-none"
         >
-          {/* The Trail (Conic Gradient) */}
+          {/* The Trail */}
           <div 
             className="absolute inset-0"
             style={{
               background: "conic-gradient(from 0deg, transparent 0%, rgba(6, 182, 212, 0.3) 50%, transparent 100%)",
-              transform: "rotate(-180deg)", // Syncs the tail to the line
-              maskImage: "radial-gradient(circle at center, black, transparent 70%)",
-              WebkitMaskImage: "radial-gradient(circle at center, black, transparent 70%)",
+              transform: "rotate(-180deg)",
+              maskImage: "radial-gradient(circle closest-side, black, transparent 95%)",
+              WebkitMaskImage: "radial-gradient(circle closest-side, black, transparent 95%)",
             }}
           />
           {/* The Hard Leading Line */}
           <div className="absolute top-1/2 left-1/2 h-[1px] w-1/2 bg-gradient-to-r from-cyan-400 to-transparent origin-left shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
         </motion.div>
 
-        {/* Concentric Circles */}
+        {/* FIX 3: Added 'aspect-square' to ensure circles never squash into ellipses */}
         {circles.map((_, idx) => (
           <div
             key={idx}
-            className="absolute rounded-full border border-neutral-800"
+            className="absolute aspect-square rounded-full border border-neutral-800"
             style={{
-              width: `${(idx + 1) * 15}%`,
-              height: `${(idx + 1) * 15}%`,
+              height: `${(idx + 1) * 15}%`, 
             }}
           />
         ))}
