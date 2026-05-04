@@ -178,7 +178,7 @@ const Scene = () => {
 
 export const HeroFuturistic = () => {
   const titleWords = 'Motion Graphics & Video Editing'.split(' ');
-  const subtitle = 'Broadcast-quality content creation with 100% client satisfaction.';
+  const subtitle = 'Quality content creation with 100% client satisfaction.';
   const [visibleWords, setVisibleWords] = useState(0);
   const [subtitleVisible, setSubtitleVisible] = useState(false);
   const [delays, setDelays] = useState<number[]>([]);
@@ -186,7 +186,7 @@ export const HeroFuturistic = () => {
 
   useEffect(() => {
     // Только на клиенте: генерируем случайные задержки для глитча
-    setDelays(titleWords.map(() => Math.random() * 0.07));
+    setDelays(titleWords.map(() => Math.random() * 0.06));
     setSubtitleDelay(Math.random() * 0.1);
   }, [titleWords.length]);
 
