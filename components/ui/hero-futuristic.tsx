@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useAspect, useTexture } from '@react-three/drei';
+import { useAspect, useTexture } from '@react-each/drei';
 import { useMemo, useRef, useState, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
 
@@ -89,36 +89,34 @@ export const HeroFuturistic = () => {
 
   useEffect(() => {
     if (visibleWords < titleWords.length) {
-      const timeout = setTimeout(() => setVisibleWords(visibleWords + 1), 200);
+      const timeout = setTimeout(() => setVisibleWords(visibleWords + 1), 180);
       return () => clearTimeout(timeout);
     }
   }, [visibleWords, titleWords.length]);
 
   return (
     <div className="h-svh bg-[#000000] overflow-hidden relative w-full">
-      {/* BRANDING: Name in top left */}
-      <div className="absolute top-8 left-8 z-50">
-        <span className="font-sans text-xs font-bold uppercase tracking-[0.5em] text-white/90">
-          Ahmed Salah <span className="text-primary">.</span>
+      {/* BRANDING */}
+      <div className="absolute top-10 left-10 z-50">
+        <span className="font-sans text-[10px] font-bold uppercase tracking-[0.6em] text-white/80">
+          Ahmed Salah <span className="text-primary">/</span> Portfolio
         </span>
       </div>
 
-      {/* HERO TEXT: Improved Visibility */}
-      <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center items-center text-center px-6">
-        <h1 className="text-5xl md:text-7xl lg:text-9xl font-title tracking-tighter leading-none">
-          <span className="flex flex-wrap justify-center gap-x-4 md:gap-x-8">
+      {/* HERO TEXT: Positioned lower and with Cyan Rim Light */}
+      <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-end items-center text-center pb-32 px-6">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-title tracking-tighter leading-none text-white">
+          <span className="flex flex-wrap justify-center gap-x-4 md:gap-x-6">
             {titleWords.map((word, index) => (
               <span
                 key={index}
                 className={`transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) ${
-                  index < visibleWords ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 blur-sm'
+                  index < visibleWords ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 blur-sm'
                 }`}
                 style={{ 
-                  transitionDelay: `${index * 0.1}s`,
-                  background: 'linear-gradient(to bottom, #ffffff 40%, #a855f7 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.5))'
+                  transitionDelay: `${index * 0.08}s`,
+                  // The "Cyan Rim Light" Effect
+                  textShadow: '0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.1)'
                 }}
               >
                 {word}
@@ -127,27 +125,24 @@ export const HeroFuturistic = () => {
           </span>
         </h1>
         
-        {/* PARAGRAPH: Higher Visibility */}
-        <p className={`mt-10 text-[10px] md:text-xs font-sans text-white uppercase tracking-[0.7em] transition-all duration-1000 delay-1000 ${visibleWords === titleWords.length ? 'opacity-70 translate-y-0' : 'opacity-0 translate-y-5'}`}>
-           Clinical-Cinematic Production Portfolio
+        <p className={`mt-6 text-[9px] md:text-xs font-sans text-white uppercase tracking-[0.8em] transition-all duration-1000 delay-700 ${visibleWords === titleWords.length ? 'opacity-50 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+           Clinical-Cinematic Production
         </p>
       </div>
 
-      {/* 3D CANVAS: Reduced Size */}
+      {/* 3D CANVAS: Shape size reduced further for dominance of text */}
       <div className="absolute inset-0 z-10 bg-black">
-        <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
+        <Canvas camera={{ position: [0, 0, 2], fov: 40 }}>
           <Suspense fallback={null}>
-            <Scene scaleFactor={0.42} /> {/* Reduced from 0.55 */}
+            <Scene scaleFactor={0.35} /> 
           </Suspense>
         </Canvas>
       </div>
 
-      {/* MINIMAL SCROLL INDICATOR */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 opacity-30">
-        <div className="flex flex-col items-center gap-4">
-          <span className="text-[8px] font-sans text-gray-400 uppercase tracking-[0.5em]">Explore</span>
-          <div className="w-[1px] h-8 bg-gradient-to-b from-primary to-transparent" />
-        </div>
+      {/* TRIM SCROLL */}
+      <div className="absolute bottom-10 right-10 z-30 flex items-center gap-4">
+        <span className="text-[8px] font-sans text-gray-600 uppercase tracking-[0.4em]">Scroll</span>
+        <div className="w-12 h-[1px] bg-white/10" />
       </div>
     </div>
   );
